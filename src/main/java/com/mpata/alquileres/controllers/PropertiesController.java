@@ -1,6 +1,11 @@
 package com.mpata.alquileres.controllers;
 
+import com.mpata.alquileres.models.PropertyFilter;
 import com.mpata.alquileres.models.PropertyResponse;
+import com.mpata.alquileres.models.enums.Conversion;
+import com.mpata.alquileres.models.enums.Currency;
+import com.mpata.alquileres.models.enums.NeighborhoodCABA;
+import com.mpata.alquileres.models.enums.PropertyType;
 import com.mpata.alquileres.service.PropertyService;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,8 +41,14 @@ public class PropertiesController {
             }
     )
     @GetMapping
-    public ResponseEntity<Page<PropertyResponse>> getProperties(@RequestParam(defaultValue = "1") @Min(1) int page,
-                                                                @RequestParam(defaultValue = "20") int limit) {
+    public ResponseEntity<Page<PropertyResponse>> getProperties(
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "20",required = false) int limit,
+            @ModelAttribute PropertyFilter filter,
+            @RequestParam(required = false) List<NeighborhoodCABA> neighborhoods,
+            @RequestParam(required = false) List<PropertyType> propertyTypes,
+            @RequestParam(required = false) Conversion conversion
+            ) {
         Page<PropertyResponse> properties = service.findAll(page-1, limit);
         return ResponseEntity.ok(properties);
     }
