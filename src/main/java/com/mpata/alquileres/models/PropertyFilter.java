@@ -4,11 +4,13 @@ import com.mpata.alquileres.models.enums.Conversion;
 import com.mpata.alquileres.models.enums.Currency;
 import com.mpata.alquileres.models.enums.NeighborhoodCABA;
 import com.mpata.alquileres.models.enums.PropertyType;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@Builder
 public class PropertyFilter {
     private long minPrice;
     private long maxPrice;
