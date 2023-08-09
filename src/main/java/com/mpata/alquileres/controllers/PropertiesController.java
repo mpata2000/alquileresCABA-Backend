@@ -7,11 +7,15 @@ import com.mpata.alquileres.models.enums.Conversion;
 import com.mpata.alquileres.models.enums.Currency;
 import com.mpata.alquileres.models.enums.NeighborhoodCABA;
 import com.mpata.alquileres.models.enums.PropertyType;
+import com.mpata.alquileres.models.enums.SurfaceType;
 import com.mpata.alquileres.service.PropertyService;
-import jakarta.validation.constraints.Min;
+import jakarta.persistence.criteria.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +26,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -44,24 +49,23 @@ public class PropertiesController {
     )
     @GetMapping
     public ResponseEntity<Page<PropertyResponse>> getProperties(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") Pageable pageable,
-            @RequestParam(defaultValue = "20",required = false) int limit,
-            @RequestParam(required = false) long minPrice,
-            @RequestParam(required = false) long maxPrice,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20",required = false) Integer size,
+            @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
             @RequestParam(required = false) Currency currency,
-            @RequestParam(required = false) int expenses,
-            @RequestParam(required = false) int minTotalArea,
-            @RequestParam(required = false) int maxTotalArea,
-            @RequestParam(required = false) int minCoveredArea,
-            @RequestParam(required = false) int maxCoveredArea,
-            @RequestParam(required = false) int minRooms,
-            @RequestParam(required = false) int maxRooms,
-            @RequestParam(required = false) int minBedrooms,
-            @RequestParam(required = false) int maxBedrooms,
-            @RequestParam(required = false) int minBathrooms,
-            @RequestParam(required = false) int maxBathrooms,
-            @RequestParam(required = false) int minGarages,
+            @RequestParam(required = false) SurfaceType surfaceType,
+            @RequestParam(required = false) Integer minArea,
+            @RequestParam(required = false) Integer maxArea,
+            @RequestParam(required = false) Integer minRooms,
+            @RequestParam(required = false) Integer maxRooms,
+            @RequestParam(required = false) Integer minBedrooms,
+            @RequestParam(required = false) Integer maxBedrooms,
+            @RequestParam(required = false) Integer minBathrooms,
+            @RequestParam(required = false) Integer maxBathrooms,
+            @RequestParam(required = false) Integer minGarages,
             @RequestParam(required = false) List<NeighborhoodCABA> neighborhoods,
             @RequestParam(required = false) List<PropertyType> propertyTypes,
             @RequestParam(required = false) Conversion conversion
@@ -70,11 +74,9 @@ public class PropertiesController {
                 .minPrice(minPrice)
                 .maxPrice(maxPrice)
                 .currency(currency)
-                .expenses(expenses)
-                .minTotalArea(minTotalArea)
-                .maxTotalArea(maxTotalArea)
-                .minCoveredArea(minCoveredArea)
-                .maxCoveredArea(maxCoveredArea)
+                .surfaceType(surfaceType)
+                .minArea(minArea)
+                .maxArea(maxArea)
                 .minRooms(minRooms)
                 .maxRooms(maxRooms)
                 .minBedrooms(minBedrooms)
@@ -82,8 +84,11 @@ public class PropertiesController {
                 .minBathrooms(minBathrooms)
                 .maxBathrooms(maxBathrooms)
                 .minGarages(minGarages)
+                .neighborhoods(neighborhoods)
+                .propertyTypes(propertyTypes)
                 .build();
-        Page<PropertyResponse> properties = service.findAll(page, limit);
+
+        Page<PropertyResponse> properties = service.findAll(filter, neighborhoods, propertyTypes, conversion, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(properties);
     }
 }
