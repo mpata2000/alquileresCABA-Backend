@@ -6,9 +6,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import lombok.Builder;
 import lombok.Data;
-import lombok.Setter;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -50,9 +48,8 @@ public class PropertyFilter {
         this.propertyTypes = propertyTypes;
     }
 
-    private List<Predicate> getPricePredicates(Root<Property> root, CriteriaBuilder criteriaBuilder, Long minPrice, Long maxPrice, Currency currency) {
+    private List<Predicate> getPredicates(Root<Property> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         List<Predicate> predicates = new ArrayList<>();
-
         if (minPrice > 0) {
             predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
         }
@@ -63,13 +60,6 @@ public class PropertyFilter {
             String s = currency == null ? Currency.ARS.toString() : currency.toString();
             predicates.add(criteriaBuilder.equal(root.get("currency"), s));
         }
-
-        return predicates;
-    }
-
-    private List<Predicate> getBasicPredicates(Root<Property> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        List<Predicate> predicates = new ArrayList<>();
-
         String surfaceType = this.surfaceType == null ? SurfaceType.TOTAL.getValue() : this.surfaceType.getValue();
         if (minArea > 0) {
             predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(surfaceType), minArea));
@@ -117,24 +107,18 @@ public class PropertyFilter {
 
     public Specification<Property> getByFilter(Conversion conversion){
         return (((root, query, criteriaBuilder) -> {
-            List<Predicate> basicPred = getBasicPredicates(root, query, criteriaBuilder);
-            if(minPrice == 0 && maxPrice == 0){
-                return criteriaBuilder.and(basicPred.toArray(new Predicate[0]));
-            }
+            List<Predicate> preds = getPredicates(root, query, criteriaBuilder);
 
-            List<Predicate> preds = getPricePredicates(root, criteriaBuilder, minPrice, maxPrice, currency);
-            preds.addAll(basicPred);
-
-            if(conversion == null || conversion == Conversion.NONE){
+            if((minPrice == 0 && maxPrice == 0) || conversion == null || conversion == Conversion.NONE){
                 return criteriaBuilder.and(preds.toArray(new Predicate[0]));
             }
 
-            Long minPriceConverted = Utils.convertPrice(minPrice, currency, conversion);
-            Long maxPriceConverted = Utils.convertPrice(maxPrice, currency, conversion);
+            minPrice = Utils.convertPrice(minPrice, currency, conversion);
+            maxPrice = Utils.convertPrice(maxPrice, currency, conversion);
+            currency = currency == Currency.ARS ? Currency.USD : Currency.ARS;
 
-            Currency currencyConverted = currency == Currency.ARS ? Currency.USD : Currency.ARS;
-            List<Predicate> predsConverted = getPricePredicates(root, criteriaBuilder, minPriceConverted, maxPriceConverted, currencyConverted );
-            predsConverted.addAll(getBasicPredicates(root, query, criteriaBuilder));
+            List<Predicate> predsConverted = getPredicates(root, query, criteriaBuilder);
+
 
             return criteriaBuilder.or(
                     criteriaBuilder.and(preds.toArray(new Predicate[0])),
