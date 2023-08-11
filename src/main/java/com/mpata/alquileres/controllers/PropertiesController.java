@@ -10,11 +10,13 @@ import com.mpata.alquileres.models.enums.PropertyType;
 import com.mpata.alquileres.models.enums.SurfaceType;
 import com.mpata.alquileres.service.PropertyService;
 import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,25 +72,32 @@ public class PropertiesController {
             @RequestParam(required = false) List<PropertyType> propertyTypes,
             @RequestParam(required = false) Conversion conversion
             ) {
-        PropertyFilter filter = PropertyFilter.builder()
-                .minPrice(minPrice)
-                .maxPrice(maxPrice)
-                .currency(currency)
-                .surfaceType(surfaceType)
-                .minArea(minArea)
-                .maxArea(maxArea)
-                .minRooms(minRooms)
-                .maxRooms(maxRooms)
-                .minBedrooms(minBedrooms)
-                .maxBedrooms(maxBedrooms)
-                .minBathrooms(minBathrooms)
-                .maxBathrooms(maxBathrooms)
-                .minGarages(minGarages)
-                .neighborhoods(neighborhoods)
-                .propertyTypes(propertyTypes)
-                .build();
+        PropertyFilter filter = new PropertyFilter(
+                minPrice,
+                maxPrice,
+                currency,
+                surfaceType,
+                minArea,
+                maxArea,
+                minRooms,
+                maxRooms,
+                minBedrooms,
+                maxBedrooms,
+                minBathrooms,
+                maxBathrooms,
+                minGarages,
+                neighborhoods,
+                propertyTypes);
 
-        Page<PropertyResponse> properties = service.findAll(filter, neighborhoods, propertyTypes, conversion, page, size, sortBy, sortDirection);
+        Page<PropertyResponse> properties = service.findAll(filter, conversion, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(properties);
+    }
+
+    @PostMapping
+    public ResponseEntity<PropertyResponse> filterProperties(@RequestBody PropertyFilter filter,
+                                                             @RequestParam(defaultValue = "0") Integer page,
+                                                             @RequestParam(defaultValue = "20",required = false) Integer size) {
+        //PropertyResponse properties = service.findAll(filter, page, size);
+        return ResponseEntity.ok(null);
     }
 }

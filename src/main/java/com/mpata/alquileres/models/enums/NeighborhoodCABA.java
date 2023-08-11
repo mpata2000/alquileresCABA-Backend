@@ -56,7 +56,7 @@ public enum NeighborhoodCABA {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
+    public String getValue() {
         return displayName;
     }
 }

@@ -1,9 +1,13 @@
 package com.mpata.alquileres.service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mpata.alquileres.models.Property;
 import com.mpata.alquileres.models.PropertyFilter;
 import com.mpata.alquileres.models.PropertyResponse;
 import com.mpata.alquileres.models.enums.Conversion;
+import com.mpata.alquileres.models.enums.Currency;
 import com.mpata.alquileres.models.enums.NeighborhoodCABA;
 import com.mpata.alquileres.models.enums.PropertyType;
 import com.mpata.alquileres.repository.PropertyRepository;
@@ -16,6 +20,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,15 +51,15 @@ public class PropertyService {
         propertyResponse.setPicsUrls(List.of(property.getPicsUrls().split(",")));
         return propertyResponse;
     }
-
     public Page<PropertyResponse> findAll(Pageable pageable) {
         Page<Property> properties = repository.findAll(pageable);
         return properties.map(this::convertToDto);
     }
 
-    public Page<PropertyResponse> findAll(PropertyFilter filter, List<NeighborhoodCABA> neighborhoods, List<PropertyType> propertyTypes, Conversion conversion, Integer page, Integer size, String sortBy, String sortDirection) {
+    public Page<PropertyResponse> findAll(PropertyFilter filter,Conversion conversion, Integer page, Integer size, String sortBy, String sortDirection) {
         Pageable pageable = createPage(page, size, sortBy, sortDirection);
-        Page<Property> properties = repository.findAll(filter.getByFilter(), pageable);
+        Page<Property> properties = repository.findAll(filter.getByFilter(conversion), pageable);
         return properties.map(this::convertToDto);
     }
+
 }
