@@ -1,34 +1,20 @@
 package com.mpata.alquileres.controllers;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
+
 import com.mpata.alquileres.models.PropertyFilter;
 import com.mpata.alquileres.models.PropertyResponse;
-import com.mpata.alquileres.models.enums.Conversion;
-import com.mpata.alquileres.models.enums.Currency;
-import com.mpata.alquileres.models.enums.NeighborhoodCABA;
-import com.mpata.alquileres.models.enums.PropertyType;
-import com.mpata.alquileres.models.enums.SurfaceType;
+import com.mpata.alquileres.models.enums.*;
 import com.mpata.alquileres.service.PropertyService;
-import jakarta.persistence.criteria.Order;
-import jakarta.persistence.criteria.Predicate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.ResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.constraints.Min;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -38,11 +24,6 @@ public class PropertiesController {
     @Autowired
     private PropertyService service;
 
-    @GetMapping("/hello")
-    public String getProperties() {
-        return "Hello World";
-    }
-
     @Operation(summary = "Get all properties with pagination")
     @ApiResponses(
             value = {
@@ -51,23 +32,22 @@ public class PropertiesController {
     )
     @GetMapping
     public ResponseEntity<Page<PropertyResponse>> getProperties(
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20",required = false) Integer size,
-            @RequestParam(required = false) String sortDirection,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) Long minPrice,
-            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(defaultValue = "0")  Integer page,
+            @RequestParam(required = false) @Min(0) String sortDirection,
+            @RequestParam(required = false) @Min(0) SortId sortBy,
+            @RequestParam(required = false) @Min(0) Long minPrice,
+            @RequestParam(required = false) @Min(0) Long maxPrice,
             @RequestParam(required = false) Currency currency,
             @RequestParam(required = false) SurfaceType surfaceType,
-            @RequestParam(required = false) Integer minArea,
-            @RequestParam(required = false) Integer maxArea,
-            @RequestParam(required = false) Integer minRooms,
-            @RequestParam(required = false) Integer maxRooms,
-            @RequestParam(required = false) Integer minBedrooms,
-            @RequestParam(required = false) Integer maxBedrooms,
-            @RequestParam(required = false) Integer minBathrooms,
-            @RequestParam(required = false) Integer maxBathrooms,
-            @RequestParam(required = false) Integer minGarages,
+            @RequestParam(required = false) @Min(0) Integer minArea,
+            @RequestParam(required = false) @Min(0) Integer maxArea,
+            @RequestParam(required = false) @Min(0) Integer minRooms,
+            @RequestParam(required = false) @Min(0) Integer maxRooms,
+            @RequestParam(required = false) @Min(0) Integer minBedrooms,
+            @RequestParam(required = false) @Min(0) Integer maxBedrooms,
+            @RequestParam(required = false) @Min(0) Integer minBathrooms,
+            @RequestParam(required = false) @Min(0) Integer maxBathrooms,
+            @RequestParam(required = false) @Min(0) Integer minGarages,
             @RequestParam(required = false) List<NeighborhoodCABA> neighborhoods,
             @RequestParam(required = false) List<PropertyType> propertyTypes,
             @RequestParam(required = false) Conversion conversion
@@ -89,15 +69,26 @@ public class PropertiesController {
                 neighborhoods,
                 propertyTypes);
 
-        Page<PropertyResponse> properties = service.findAll(filter, conversion, page, size, sortBy, sortDirection);
+        Page<PropertyResponse> properties = service.findAll(filter, conversion, page, sortBy, sortDirection);
         return ResponseEntity.ok(properties);
     }
 
     @PostMapping
     public ResponseEntity<PropertyResponse> filterProperties(@RequestBody PropertyFilter filter,
                                                              @RequestParam(defaultValue = "0") Integer page,
-                                                             @RequestParam(defaultValue = "20",required = false) Integer size) {
+                                                             @RequestParam(defaultValue = "20",required = false) @Min(0) Integer size) {
         //PropertyResponse properties = service.findAll(filter, page, size);
         return ResponseEntity.ok(null);
+    }
+
+    @Transactional
+    @PatchMapping("increase-clicks/{id}")
+    public ResponseEntity<PropertyResponse> increaseClicks(@PathVariable Long id) {
+        try{
+            PropertyResponse property = service.increaseClicks(id);
+            return ResponseEntity.ok(property);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

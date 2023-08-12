@@ -15,4 +15,11 @@ public enum Currency {
             return Currency.ARS;
         }
     }
+
+    public Currency getOpposite() {
+        if (this == Currency.ARS) {
+            return Currency.USD;
+        }
+        return Currency.ARS;
+    }
 }

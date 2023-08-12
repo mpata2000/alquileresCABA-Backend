@@ -113,8 +113,8 @@ public class PropertyFilter {
                 return criteriaBuilder.and(preds.toArray(new Predicate[0]));
             }
 
-            minPrice = Utils.convertPrice(minPrice, currency, conversion);
-            maxPrice = Utils.convertPrice(maxPrice, currency, conversion);
+            minPrice = Utils.exchangeRate(minPrice, currency, conversion);
+            maxPrice = Utils.exchangeRate(maxPrice, currency, conversion);
             currency = currency == Currency.ARS ? Currency.USD : Currency.ARS;
 
             List<Predicate> predsConverted = getPredicates(root, query, criteriaBuilder);

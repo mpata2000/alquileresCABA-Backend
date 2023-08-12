@@ -68,7 +68,8 @@ public class Property {
     @Column(name = "last_read_date", columnDefinition = "TIMESTAMP")
     private LocalDateTime lastReadDate;
 
-    private int click_count;
+    @Column(name = "click_count")
+    private int clickCount;
 
 
 }

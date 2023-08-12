@@ -20,6 +20,8 @@ public class PropertyResponse {
     private PropertyType propType;
     private long price;
     private Currency currency;
+    private long convertedPrice;
+    private Currency convertedCurrency;
     private long expenses;
     private long totalArea;
     private long coveredArea;
@@ -32,4 +34,11 @@ public class PropertyResponse {
     private Page page;
     private List<String> picsUrls;
     private LocalDateTime lastReadDate;
+
+    /**
+     * Sets the convertedCurrency with the opposite value of the currency field.
+     */
+    public void setConvertedCurrency() {
+        this.convertedCurrency = this.currency.getOpposite();
+    }
 }
